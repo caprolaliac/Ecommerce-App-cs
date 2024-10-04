@@ -9,6 +9,8 @@ using Ecommerce_Application.Repository;
 using static System.Exception;
 using Ecommerce_Application.Exception;
 using Student_Information_System.Utility;
+using System.Text.RegularExpressions;
+
 
 namespace Ecommerce_Application.Repository
 {
@@ -628,7 +630,7 @@ namespace Ecommerce_Application.Repository
             {
                 connection.Open();
 
-                var cmd = new SqlCommand("SELECT oi.order_item_id, oi.quantity, oi.product_id, p.product_name, p.price FROM order_items oi JOIN products p ON oi.product_id = p.product_id WHERE oi.order_id = @OrderId", connection);
+                var cmd = new SqlCommand("SELECT oi.order_item_id, oi.quantity, oi.product_id, p.name, p.price FROM order_items oi JOIN products p ON oi.product_id = p.product_id  WHERE oi.order_id = @OrderId", connection);
                 cmd.Parameters.AddWithValue("@OrderId", orderId);
 
                 using (var reader = cmd.ExecuteReader())
@@ -648,6 +650,60 @@ namespace Ecommerce_Application.Repository
             }
 
             return orderItems;
+        }
+
+        public int GetQuantityInCart(Customer customer, int productId)
+        {
+            try
+            {
+                var cartItems = getAllFromCart(customer);
+                var productInCart = cartItems.FirstOrDefault(item => item.ProductId == productId);
+                return productInCart != null ? productInCart.StockQuantity : 0;
+            }
+            catch(System.Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return 0;
+            }
+        }
+
+        public void DeductStock(int productId, int quantity)
+        {
+            using (var connection = new SqlConnection(DbConnUtil.GetConnString()))
+            {
+                connection.Open();
+                try
+                {
+                    var cmd = new SqlCommand("update products set stockQuantity = stockQuantity - @Quantity where product_id = @ProductId", connection);
+                    cmd.Parameters.AddWithValue("@Quantity", quantity);
+                    cmd.Parameters.AddWithValue("@ProductId", productId);
+                    cmd.ExecuteNonQuery();
+                }
+                catch(System.Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+        }
+
+        public bool IsValidEmail(string email)
+        {
+            const string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+            return Regex.IsMatch(email, emailPattern);
+        }
+
+        public bool IsValidPassword(string password)
+        {
+            string pattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$";
+
+            return Regex.IsMatch(password, pattern);
+        }
+
+        void IOrderProcessorRepository.PrintColored(string message, ConsoleColor color)
+        {
+            Console.ForegroundColor = color;
+            Console.WriteLine(message);
+            Console.ResetColor();
         }
 
 

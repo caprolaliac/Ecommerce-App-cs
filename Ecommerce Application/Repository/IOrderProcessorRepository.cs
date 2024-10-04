@@ -27,8 +27,16 @@ namespace Ecommerce_Application.Repository
         bool placeOrder(Customer customer, List<Dictionary<Product, int>> products, string shippingAddress);
         List<Order> GetOrdersByCustomer(int customerId);
         int GetLatestOrderId(int customerId);
-
+        decimal CalculateTotalPrice(List<Dictionary<Product, int>> products);
         List<OrderItem> GetOrderDetails(int orderId);
+
+        int GetQuantityInCart(Customer customer, int productId);
+
+        void DeductStock(int productId, int quantity);
+        bool IsValidEmail(string email);
+
+        bool IsValidPassword(string password);
+        void PrintColored(string message, ConsoleColor color);
 
     }
 }
