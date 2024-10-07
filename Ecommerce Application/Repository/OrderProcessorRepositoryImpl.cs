@@ -162,25 +162,24 @@ namespace Ecommerce_Application.Repository
                 {
                     connection.Open();
 
-                    var checkCustomerCmd = new SqlCommand("SELECT COUNT(*) FROM customers WHERE customer_id = @CustomerId", connection);
+                    var checkCustomerCmd = new SqlCommand("select count(*) from customers where customer_id = @CustomerId", connection);
                     checkCustomerCmd.Parameters.AddWithValue("@CustomerId", customer.CustomerId);
 
                     int customerCount = (int)checkCustomerCmd.ExecuteScalar();
                     if (customerCount == 0)
                     {
                         var insertCustomerCmd = new SqlCommand(
-                            "INSERT INTO customers (customer_id, name, email, password) VALUES (@CustomerId, @Name, @Email, @Password)", connection);
+                            "insert into customers (customer_id, name, email, password) values (@CustomerId, @Name, @Email, @Password)", connection);
                         insertCustomerCmd.Parameters.AddWithValue("@CustomerId", customer.CustomerId);
                         insertCustomerCmd.Parameters.AddWithValue("@Name", customer.Name);
                         insertCustomerCmd.Parameters.AddWithValue("@Email", customer.Email);
-                        insertCustomerCmd.Parameters.AddWithValue("@Password", customer.Password); // Ensure you're hashing passwords in production
+                        insertCustomerCmd.Parameters.AddWithValue("@Password", customer.Password);
 
                         insertCustomerCmd.ExecuteNonQuery();
                         Console.WriteLine("Customer added successfully.");
                     }
 
-                    // Proceed to insert the product into the cart
-                    var cmd = new SqlCommand("INSERT INTO cart (customer_id, product_id, quantity) VALUES (@CustomerId, @ProductId, @Quantity)", connection);
+                    var cmd = new SqlCommand("insert into cart (customer_id, product_id, quantity) values (@CustomerId, @ProductId, @Quantity)", connection);
                     cmd.Parameters.AddWithValue("@CustomerId", customer.CustomerId);
                     cmd.Parameters.AddWithValue("@ProductId", product.ProductId);
                     cmd.Parameters.AddWithValue("@Quantity", quantity);

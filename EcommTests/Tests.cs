@@ -21,7 +21,7 @@ namespace EcommTests
         public void Setup()
         {
             _repository = new OrderProcessorRepositoryImpl();
-            //CleanupTestData();
+            CleanupTestData();
 
             _testCustomer = new Customer
             {
