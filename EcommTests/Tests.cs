@@ -1,115 +1,3 @@
-//using NUnit.Framework;
-//using Ecommerce_Application.Model;
-//using Ecommerce_Application.Repository;
-//using Ecommerce_Application.Exception;
-//using System;
-//using System.Collections.Generic;
-
-//namespace EcommTests
-//{
-//    [TestFixture]
-//    public class OrderProcessorTests
-//    {
-//        private IOrderProcessorRepository _repository;
-//        private Customer _testCustomer;
-//        private Product _testProduct;
-
-//        [SetUp]
-//        public void Setup()
-//        {
-//            _repository = new OrderProcessorRepositoryImpl();
-
-//            _testCustomer = new Customer
-//            {
-//                Name = "ram B",
-//                Email = "ram.B@email.com",
-//                Password = "Ramb@123456"
-//            };
-
-//            // Insert the customer into the database
-//            _repository.createCustomer(_testCustomer);  // Assuming this method sets the ID in the customer object
-
-//            // Create a test product
-//            _testProduct = new Product
-//            {
-//                Name = "Samsung Galaxy S24 ultra",
-//                Price = 999,
-//                Description = "Latest Samsung phone",
-//                StockQuantity = 5
-//            };
-
-//            // Insert the product into the database
-//            _repository.createProduct(_testProduct);  // Assuming this method sets the ID in the product object
-
-//            // Add the product to the cart
-//            _repository.addToCart(_testCustomer, _testProduct, 1);
-//        }
-
-
-//        [Test]
-//        [Description("Create Product")]
-//        public void Test_CreateProduct_Success()
-//        {
-//            Product newProduct = new Product
-//            {
-//                Name = "Apple iPhone 16",
-//                Price = 1099,
-//                Description = "Latest iPhone",
-//                StockQuantity = 3
-//            };
-
-//            bool result = _repository.createProduct(newProduct); // This should set newProduct.ProductId automatically
-//            Assert.That(result, Is.True);
-//        }
-
-//        [Test]
-//        [Description("Add Product to Cart")]
-//        public void Test_AddToCart_Success()
-//        {
-//            int quantity = 1;
-//            bool result = _repository.addToCart(_testCustomer, _testProduct, quantity);
-//            Assert.That(result, Is.True);
-//        }
-
-//        [Test]
-//        [Description("Place Order")]
-//        public void Test_PlaceOrder_Success()
-//        {
-//            string shippingAddress = "124 Main St, Delhi";
-//            var productList = new List<Dictionary<Product, int>>
-//            {
-//                new Dictionary<Product, int> { { _testProduct, 1 } }
-//            };
-
-//            bool result = _repository.placeOrder(_testCustomer, productList, shippingAddress);
-//            Assert.That(result, Is.True);
-//        }
-
-//        [Test]
-//        [Description("Product Not Found Exception")]
-//        public void Test_GetProductById_ThrowsException()
-//        {
-//            int nonExistentProductId = 1005;
-
-//            var ex = Assert.Throws<ProductNotFoundException>(() =>
-//                _repository.GetProductById(nonExistentProductId));
-
-//            Assert.That(ex.Message, Does.Contain(nonExistentProductId.ToString()));
-//        }
-
-//        [Test]
-//        [Description("Customer Not Found Exception")]
-//        public void Test_GetOrdersByCustomer_ThrowsException()
-//        {
-//            int nonExistentCustomerId = 9999;
-//            var ex = Assert.Throws<CustomerNotFoundException>(() =>
-//                _repository.GetOrdersByCustomer(nonExistentCustomerId));
-
-//            Assert.That(ex.Message, Does.Contain(nonExistentCustomerId.ToString()));
-//        }
-//    }
-//}
-
 using NUnit.Framework;
 using Ecommerce_Application.Model;
 using Ecommerce_Application.Repository;
@@ -230,7 +118,7 @@ namespace EcommTests
         public void Test_AddToCart()
         {
             var product = _repository.GetProductById(_testProductId);
-            Assert.That(product, Is.Not.Null, "Test product should exist");
+            Assert.That(product, Is.Not.Null, "product should exist");
 
             bool result = _repository.addToCart(_testCustomer, product, 1);
 
@@ -304,3 +192,119 @@ namespace EcommTests
         }
     }
 }
+
+
+
+
+//using NUnit.Framework;
+//using Ecommerce_Application.Model;
+//using Ecommerce_Application.Repository;
+//using Ecommerce_Application.Exception;
+//using System;
+//using System.Collections.Generic;
+
+//namespace EcommTests
+//{
+//    [TestFixture]
+//    public class OrderProcessorTests
+//    {
+//        private IOrderProcessorRepository _repository;
+//        private Customer _testCustomer;
+//        private Product _testProduct;
+
+//        [SetUp]
+//        public void Setup()
+//        {
+//            _repository = new OrderProcessorRepositoryImpl();
+
+//            _testCustomer = new Customer
+//            {
+//                Name = "ram B",
+//                Email = "ram.B@email.com",
+//                Password = "Ramb@123456"
+//            };
+
+//            // Insert the customer into the database
+//            _repository.createCustomer(_testCustomer);  // Assuming this method sets the ID in the customer object
+
+//            // Create a test product
+//            _testProduct = new Product
+//            {
+//                Name = "Samsung Galaxy S24 ultra",
+//                Price = 999,
+//                Description = "Latest Samsung phone",
+//                StockQuantity = 5
+//            };
+
+//            // Insert the product into the database
+//            _repository.createProduct(_testProduct);  // Assuming this method sets the ID in the product object
+
+//            // Add the product to the cart
+//            _repository.addToCart(_testCustomer, _testProduct, 1);
+//        }
+
+
+//        [Test]
+//        [Description("Create Product")]
+//        public void Test_CreateProduct_Success()
+//        {
+//            Product newProduct = new Product
+//            {
+//                Name = "Apple iPhone 16",
+//                Price = 1099,
+//                Description = "Latest iPhone",
+//                StockQuantity = 3
+//            };
+
+//            bool result = _repository.createProduct(newProduct); // This should set newProduct.ProductId automatically
+//            Assert.That(result, Is.True);
+//        }
+
+//        [Test]
+//        [Description("Add Product to Cart")]
+//        public void Test_AddToCart_Success()
+//        {
+//            int quantity = 1;
+//            bool result = _repository.addToCart(_testCustomer, _testProduct, quantity);
+//            Assert.That(result, Is.True);
+//        }
+
+//        [Test]
+//        [Description("Place Order")]
+//        public void Test_PlaceOrder_Success()
+//        {
+//            string shippingAddress = "124 Main St, Delhi";
+//            var productList = new List<Dictionary<Product, int>>
+//            {
+//                new Dictionary<Product, int> { { _testProduct, 1 } }
+//            };
+
+//            bool result = _repository.placeOrder(_testCustomer, productList, shippingAddress);
+//            Assert.That(result, Is.True);
+//        }
+
+//        [Test]
+//        [Description("Product Not Found Exception")]
+//        public void Test_GetProductById_ThrowsException()
+//        {
+//            int nonExistentProductId = 1005;
+
+//            var ex = Assert.Throws<ProductNotFoundException>(() =>
+//                _repository.GetProductById(nonExistentProductId));
+
+//            Assert.That(ex.Message, Does.Contain(nonExistentProductId.ToString()));
+//        }
+
+//        [Test]
+//        [Description("Customer Not Found Exception")]
+//        public void Test_GetOrdersByCustomer_ThrowsException()
+//        {
+//            int nonExistentCustomerId = 9999;
+//            var ex = Assert.Throws<CustomerNotFoundException>(() =>
+//                _repository.GetOrdersByCustomer(nonExistentCustomerId));
+
+//            Assert.That(ex.Message, Does.Contain(nonExistentCustomerId.ToString()));
+//        }
+//    }
+//}
+
