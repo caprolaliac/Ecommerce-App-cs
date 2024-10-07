@@ -455,6 +455,7 @@ namespace Ecommerce_Application.Repository
                         }
                     }
                 }
+                
                 catch (SqlException sqlEx)
                 {
                     Console.WriteLine(sqlEx.Message);
@@ -462,10 +463,14 @@ namespace Ecommerce_Application.Repository
                 }
                 catch (System.Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
-                    return null;
-                    throw;
+                    throw new ProductNotFoundException(productId);
                 }
+                //catch (System.Exception ex)
+                //{
+                //    Console.WriteLine(ex.Message);
+                //    return null;
+                //    throw;
+                //}
             }
         }
 
