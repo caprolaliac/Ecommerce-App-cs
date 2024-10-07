@@ -59,30 +59,30 @@ namespace EcommTests
         [TearDown]
         public void Cleanup()
         {
-            //CleanupTestData();
+            CleanupTestData();
         }
 
-        //private void CleanupTestData()
-        //{
-        //    using (var connection = new SqlConnection(DbConnUtil.GetConnString()))
-        //    {
-        //        connection.Open();
-        //        using (var command = connection.CreateCommand())
-        //        {
-        //            command.CommandText = @"
-        //                DELETE FROM order_items;
-        //                DELETE FROM orders;
-        //                DELETE FROM cart;
-        //                DELETE FROM products;
-        //                DELETE FROM customers;
-        //                DBCC CHECKIDENT ('products', RESEED, 0);
-        //                DBCC CHECKIDENT ('customers', RESEED, 0);
-        //                DBCC CHECKIDENT ('orders', RESEED, 0);
-        //                DBCC CHECKIDENT ('order_items', RESEED, 0);";
-        //            command.ExecuteNonQuery();
-        //        }
-        //    }
-        //}
+        private void CleanupTestData()
+        {
+            using (var connection = new SqlConnection(DbConnUtil.GetConnString()))
+            {
+                connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = @"
+                        DELETE FROM order_items;
+                        DELETE FROM orders;
+                        DELETE FROM cart;
+                        DELETE FROM products;
+                        DELETE FROM customers;
+                        DBCC CHECKIDENT ('products', RESEED, 0);
+                        DBCC CHECKIDENT ('customers', RESEED, 0);
+                        DBCC CHECKIDENT ('orders', RESEED, 0);
+                        DBCC CHECKIDENT ('order_items', RESEED, 0);";
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
 
         [Test]
         [Description("Create Product")]
