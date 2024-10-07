@@ -103,16 +103,19 @@ namespace Ecommerce_Application.Main
                         }
 
                         break;
-
                     case "3":
+                    addProductsToCart:
                         orderProcessorRepository.DisplayAllProducts();
                         Console.WriteLine("\nEnter Product ID: ");
+
                         if (int.TryParse(Console.ReadLine(), out int productIdToAdd))
                         {
                             Console.WriteLine("Enter Quantity: ");
+
                             if (int.TryParse(Console.ReadLine(), out int quantityToAdd) && quantityToAdd > 0)
                             {
                                 var productToAdd = orderProcessorRepository.GetProductById(productIdToAdd);
+
                                 if (productToAdd != null && productToAdd.StockQuantity >= quantityToAdd)
                                 {
                                     if (orderProcessorRepository.addToCart(currentCustomer, productToAdd, quantityToAdd))
@@ -138,6 +141,13 @@ namespace Ecommerce_Application.Main
                         {
                             orderProcessorRepository.PrintColored("Invalid Product ID.", ConsoleColor.Red);
                         }
+
+                        Console.WriteLine("Do you want to add more products? (yes/no)");
+                        if (Console.ReadLine()?.Trim().ToLower() == "yes")
+                        {
+                            goto addProductsToCart;
+                        }
+
                         break;
 
                     case "4":

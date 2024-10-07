@@ -41,7 +41,7 @@ namespace Ecommerce_Application.Repository
                         }
                         else
                         {
-                            Console.WriteLine("Please finish order first");
+                            Console.WriteLine();
                             return false;
                         }
                     }
@@ -145,12 +145,42 @@ namespace Ecommerce_Application.Repository
             {
                 throw new ProductNotFoundException(-1);
             }
+            if (quantity <= 0)
+            {
+                Console.WriteLine("Invalid quantity.");
+                return false;
+            }
+            if (product.StockQuantity < quantity)
+            {
+                Console.WriteLine("Insufficient stock.");
+                return false;
+            }
+
             using (var connection = new SqlConnection(DbConnUtil.GetConnString()))
             {
                 try
                 {
                     connection.Open();
-                    cmd = new SqlCommand("insert into cart (customer_id, product_id, quantity) values (@CustomerId, @ProductId, @Quantity)", connection);
+
+                    var checkCustomerCmd = new SqlCommand("SELECT COUNT(*) FROM customers WHERE customer_id = @CustomerId", connection);
+                    checkCustomerCmd.Parameters.AddWithValue("@CustomerId", customer.CustomerId);
+
+                    int customerCount = (int)checkCustomerCmd.ExecuteScalar();
+                    if (customerCount == 0)
+                    {
+                        var insertCustomerCmd = new SqlCommand(
+                            "INSERT INTO customers (customer_id, name, email, password) VALUES (@CustomerId, @Name, @Email, @Password)", connection);
+                        insertCustomerCmd.Parameters.AddWithValue("@CustomerId", customer.CustomerId);
+                        insertCustomerCmd.Parameters.AddWithValue("@Name", customer.Name);
+                        insertCustomerCmd.Parameters.AddWithValue("@Email", customer.Email);
+                        insertCustomerCmd.Parameters.AddWithValue("@Password", customer.Password); // Ensure you're hashing passwords in production
+
+                        insertCustomerCmd.ExecuteNonQuery();
+                        Console.WriteLine("Customer added successfully.");
+                    }
+
+                    // Proceed to insert the product into the cart
+                    var cmd = new SqlCommand("INSERT INTO cart (customer_id, product_id, quantity) VALUES (@CustomerId, @ProductId, @Quantity)", connection);
                     cmd.Parameters.AddWithValue("@CustomerId", customer.CustomerId);
                     cmd.Parameters.AddWithValue("@ProductId", product.ProductId);
                     cmd.Parameters.AddWithValue("@Quantity", quantity);
@@ -169,11 +199,12 @@ namespace Ecommerce_Application.Repository
                 }
                 catch (System.Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    Console.WriteLine($"Error adding to cart: {ex.Message}");
                     return false;
                 }
             }
         }
+
 
         public bool createCustomer(Customer customer)
         {
@@ -392,6 +423,11 @@ namespace Ecommerce_Application.Repository
 
         public Product GetProductById(int productId)
         {
+            if(productId <= 0)
+            {
+                throw new ProductNotFoundException(productId);
+            }
+
             using (var connection = new SqlConnection(DbConnUtil.GetConnString()))
             {
                 try
@@ -419,11 +455,16 @@ namespace Ecommerce_Application.Repository
                         }
                     }
                 }
+                catch (SqlException sqlEx)
+                {
+                    Console.WriteLine(sqlEx.Message);
+                    throw; 
+                }
                 catch (System.Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                     return null;
-                    
+                    throw;
                 }
             }
         }
@@ -431,6 +472,32 @@ namespace Ecommerce_Application.Repository
 
         public bool placeOrder(Customer customer, List<Dictionary<Product, int>> products, string shippingAddress)
         {
+            if (products == null || products.Count == 0)
+            {
+                Console.WriteLine("Product list is empty.");
+                return false;
+            }
+
+            foreach (var productDict in products)
+            {
+                foreach (var productEntry in productDict)
+                {
+                    Product product = productEntry.Key;
+                    int quantity = productEntry.Value;
+
+                    var existingProduct = GetProductById(product.ProductId);
+                    if (existingProduct == null)
+                    {
+                        throw new ProductNotFoundException(product.ProductId);
+                    }
+
+                    if (existingProduct.StockQuantity < quantity)
+                    {
+                        Console.WriteLine($"Not enough stock for Product");
+                        return false;
+                    }
+                }
+            }
             using (var connection = new SqlConnection(DbConnUtil.GetConnString()))
             {
                 try
@@ -669,6 +736,17 @@ namespace Ecommerce_Application.Repository
 
         public void DeductStock(int productId, int quantity)
         {
+            var product = GetProductById(productId);
+            if (product == null)
+            {
+                throw new ProductNotFoundException(productId);
+            }
+
+            if (product.StockQuantity < quantity)
+            {
+                Console.WriteLine("Not enough stock to fulfill the order.");
+                return;
+            }
             using (var connection = new SqlConnection(DbConnUtil.GetConnString()))
             {
                 connection.Open();
