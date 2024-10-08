@@ -9,7 +9,6 @@ using Student_Information_System.Utility;
 
 namespace EcommTests
 {
-    [TestFixture]
     public class OrderProcessorTests
     {
         private IOrderProcessorRepository _repository;

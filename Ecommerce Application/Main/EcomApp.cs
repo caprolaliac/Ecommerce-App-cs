@@ -11,7 +11,7 @@ namespace Ecommerce_Application.Main
     internal class EcomApp
     {
         private static IOrderProcessorRepository orderProcessorRepository = new OrderProcessorRepositoryImpl();
-        private static Customer currentCustomer;
+        private static Customer? currentCustomer;
 
         public static void Run()
         {
@@ -23,7 +23,7 @@ namespace Ecommerce_Application.Main
                 Console.WriteLine("3. Exit\n");
                 orderProcessorRepository.PrintColored("Enter Your Choice (1-3):  ", ConsoleColor.Yellow);
 
-                string choice = Console.ReadLine();
+                string? choice = Console.ReadLine();
                 switch (choice)
                 {
                     case "1":
@@ -36,18 +36,18 @@ namespace Ecommerce_Application.Main
                         }
                         break;
                     case "3":
-                        return;
+                        break;
                     default:
                         orderProcessorRepository.PrintColored("Invalid choice.", ConsoleColor.Red);
                         Console.WriteLine();
-                        break;
+                        return;
                 }
             }
         }
         private static bool Login()
         {
             Console.WriteLine("\nEnter Email:");
-            string customerEmail = Console.ReadLine();
+            string? customerEmail = Console.ReadLine();
             if (!orderProcessorRepository.IsValidEmail(customerEmail))
             {
                 orderProcessorRepository.PrintColored("Invalid email format.", ConsoleColor.Red);
@@ -55,7 +55,7 @@ namespace Ecommerce_Application.Main
                 return false;
             }
             Console.WriteLine("Enter Password:");
-            string password = Console.ReadLine();
+            string? password = Console.ReadLine();
             try
             {
                 currentCustomer = orderProcessorRepository.GetCustomerByEmail(customerEmail);
@@ -82,10 +82,10 @@ namespace Ecommerce_Application.Main
         private static void SignUp()
         {
             Console.WriteLine("\nEnter Name:");
-            string name = Console.ReadLine();
+            string? name = Console.ReadLine();
 
             Console.WriteLine("\nEnter Email:");
-            string email = Console.ReadLine();
+            string? email = Console.ReadLine();
             if (!orderProcessorRepository.IsValidEmail(email))
             {
                 orderProcessorRepository.PrintColored("Invalid email format.", ConsoleColor.Red);
@@ -94,7 +94,7 @@ namespace Ecommerce_Application.Main
             }
 
             Console.WriteLine("\nEnter Password:");
-            string password = Console.ReadLine();
+            string? password = Console.ReadLine();
             if (!orderProcessorRepository.IsValidPassword(password))
             {
                 orderProcessorRepository.PrintColored("Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a digit, and a special character.", ConsoleColor.Red);
@@ -139,7 +139,7 @@ namespace Ecommerce_Application.Main
                 Console.WriteLine("4. Exit\n");
 
                 orderProcessorRepository.PrintColored("Enter Your Choice (1-4):  ", ConsoleColor.Yellow);
-                string choice = Console.ReadLine();
+                string? choice = Console.ReadLine();
 
                 admin_menu:
                 switch (choice)
@@ -183,7 +183,7 @@ namespace Ecommerce_Application.Main
                         }
                         break;
                     case "3":
-                        orderProcessorRepository.PrintColored("You have no orders.", ConsoleColor.Yellow);
+                        orderProcessorRepository.PrintColored("Enter Customer Id: ", ConsoleColor.Yellow);
                         int customer_id = int.Parse(Console.ReadLine());
                         List<Order> orders = orderProcessorRepository.GetOrdersByCustomer(customer_id);
                         if (orders.Count == 0)
@@ -201,10 +201,11 @@ namespace Ecommerce_Application.Main
                         }
 
                         break;
+                    case "4":
+                        break;
                 }
             }
         }
-//---------------------------------------------------------------------------------------------------------------------------------------------------------
         private static void Customer_Menu()
         {
             while (true)
@@ -216,7 +217,7 @@ namespace Ecommerce_Application.Main
                 Console.WriteLine("4. View your Orders");
                 Console.WriteLine("5. Exit\n");
                 orderProcessorRepository.PrintColored("Enter Your Choice (1-5):  ", ConsoleColor.Yellow);
-                string choice = Console.ReadLine();
+                string? choice = Console.ReadLine();
                 Console.WriteLine();
 
                 switch (choice)
@@ -347,10 +348,10 @@ namespace Ecommerce_Application.Main
                         break;
                     case "5":
                         Console.WriteLine("Exitting...");
-                        return;
+                        break;
                     default:
                         Console.WriteLine();
-                        break;
+                        return;
                 }
                     
             }
@@ -366,7 +367,7 @@ namespace Ecommerce_Application.Main
                 Console.WriteLine("3. Exit");
 
                 orderProcessorRepository.PrintColored("Enter Your Choice (1-3):  ", ConsoleColor.Yellow);
-                string choice = Console.ReadLine();
+                string? choice = Console.ReadLine();
                 switch (choice)
                 {
                     case "1":
@@ -374,7 +375,7 @@ namespace Ecommerce_Application.Main
                         break;
                     case "2":
                         orderProcessorRepository.PrintColored("\nEnter Admin Password: ", ConsoleColor.Yellow);
-                        string admin_pass = Console.ReadLine();
+                        string? admin_pass = Console.ReadLine();
                         if (orderProcessorRepository.IsAdmin(admin_pass))
                         {
                             Admin_Menu();
@@ -384,7 +385,10 @@ namespace Ecommerce_Application.Main
                             orderProcessorRepository.PrintColored("\nYou are not an admin", ConsoleColor.Red);
                         }
                         break;
-                      
+                    case "3":
+                        break;
+                    default :
+                        return;
                 }
             }
         }

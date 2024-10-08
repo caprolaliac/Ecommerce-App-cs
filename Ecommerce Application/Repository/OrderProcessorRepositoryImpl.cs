@@ -46,6 +46,11 @@ namespace Ecommerce_Application.Repository
                         }
                     }
                 }
+                catch (SqlException sqlEx)
+                {
+                    Console.WriteLine(sqlEx.Message);
+                    throw;
+                }
                 catch (System.Exception ex)
                 {
                     Console.WriteLine(ex.Message);
@@ -88,6 +93,11 @@ namespace Ecommerce_Application.Repository
                         }
                     }
                 }
+                catch (SqlException sqlEx)
+                {
+                    Console.WriteLine(sqlEx.Message);
+                    throw;
+                }
                 catch (System.Exception ex)
                 {
                     Console.WriteLine(ex.Message);
@@ -128,6 +138,11 @@ namespace Ecommerce_Application.Repository
                             }
                         }
                     }
+                }
+                catch (SqlException sqlEx)
+                {
+                    Console.WriteLine(sqlEx.Message);
+                    throw; 
                 }
                 catch (System.Exception ex)
                 {
@@ -195,6 +210,11 @@ namespace Ecommerce_Application.Repository
                         Console.WriteLine("Could not add the product.");
                         return false;
                     }
+                }
+                catch (SqlException sqlEx)
+                {
+                    Console.WriteLine(sqlEx.Message);
+                    throw;
                 }
                 catch (System.Exception ex)
                 {
