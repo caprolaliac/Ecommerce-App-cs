@@ -32,7 +32,7 @@ namespace Ecommerce_Application.Main
                     case "2":
                         if (Login())
                         {
-                            Menu();
+                            Menu1();
                         }
                         break;
                     case "3":
@@ -44,206 +44,6 @@ namespace Ecommerce_Application.Main
                 }
             }
         }
-
-        private static void Menu()
-        {
-            while (true)
-            {
-                Console.WriteLine("\nSelect an option:");
-                Console.WriteLine("1. Create Product");
-                Console.WriteLine("2. Delete Product");
-                Console.WriteLine("3. Add to Cart");
-                Console.WriteLine("4. View Cart");
-                Console.WriteLine("5. Place Order");
-                Console.WriteLine("6. View Customer Orders");
-                Console.WriteLine("7. Exit\n");
-
-                orderProcessorRepository.PrintColored("Enter Your Choice (1-7):  ", ConsoleColor.Yellow);
-                string choice = Console.ReadLine();
-            menu:
-                switch (choice)
-                {
-                    case "1":
-                        Console.WriteLine("\nEnter Product Name:");
-                        string productName = Console.ReadLine();
-                        Console.WriteLine("Enter Product Price:");
-                        decimal productPrice = decimal.Parse(Console.ReadLine());
-                        Console.WriteLine("Enter Product Description:");
-                        string productDescription = Console.ReadLine();
-                        Console.WriteLine("Enter Stock Quantity:");
-                        int stockQuantity = int.Parse(Console.ReadLine());
-
-                        if (orderProcessorRepository.createProduct(new Product { Name = productName, Price = productPrice, Description = productDescription, StockQuantity = stockQuantity }))
-                        {
-                            orderProcessorRepository.PrintColored("Product created successfully.", ConsoleColor.Green);
-                            Console.WriteLine();
-                        }
-                        else
-                        {
-                            orderProcessorRepository.PrintColored("Failed to create product.", ConsoleColor.Red);
-                            goto menu;
-                        }
-
-                        break;
-
-                    case "2":
-                        orderProcessorRepository.DisplayAllProducts();
-                        Console.WriteLine("\nEnter Product ID to delete:");
-                        int productIdToDelete = int.Parse(Console.ReadLine());
-                        if (orderProcessorRepository.deleteProduct(productIdToDelete))
-                        {
-                            orderProcessorRepository.PrintColored("Product deleted successfully.", ConsoleColor.Green);
-                            Console.WriteLine();
-                        }
-                        else
-                        {
-                            orderProcessorRepository.PrintColored("Failed to delete product.", ConsoleColor.Red);
-                            Console.WriteLine();
-                            goto menu;
-                        }
-
-                        break;
-                    case "3":
-                    addProductsToCart:
-                        orderProcessorRepository.DisplayAllProducts();
-                        Console.WriteLine("\nEnter Product ID: ");
-
-                        if (int.TryParse(Console.ReadLine(), out int productIdToAdd))
-                        {
-                            Console.WriteLine("Enter Quantity: ");
-
-                            if (int.TryParse(Console.ReadLine(), out int quantityToAdd) && quantityToAdd > 0)
-                            {
-                                var productToAdd = orderProcessorRepository.GetProductById(productIdToAdd);
-
-                                if (productToAdd != null && productToAdd.StockQuantity >= quantityToAdd)
-                                {
-                                    if (orderProcessorRepository.addToCart(currentCustomer, productToAdd, quantityToAdd))
-                                    {
-                                        orderProcessorRepository.PrintColored("Product added to cart.", ConsoleColor.Green);
-                                    }
-                                    else
-                                    {
-                                        orderProcessorRepository.PrintColored("Failed to add product to cart.", ConsoleColor.Red);
-                                    }
-                                }
-                                else
-                                {
-                                    orderProcessorRepository.PrintColored("Insufficient stock available.", ConsoleColor.Red);
-                                }
-                            }
-                            else
-                            {
-                                orderProcessorRepository.PrintColored("Invalid quantity entered.", ConsoleColor.Red);
-                            }
-                        }
-                        else
-                        {
-                            orderProcessorRepository.PrintColored("Invalid Product ID.", ConsoleColor.Red);
-                        }
-
-                        Console.WriteLine("Do you want to add more products? (yes/no)");
-                        if (Console.ReadLine()?.Trim().ToLower() == "yes")
-                        {
-                            goto addProductsToCart;
-                        }
-
-                        break;
-
-                    case "4":
-                        var cartItems = orderProcessorRepository.getAllFromCart(currentCustomer);
-                        if (cartItems.Count == 0)
-                        {
-                            orderProcessorRepository.PrintColored("Your cart is empty.", ConsoleColor.Red);
-                            break;
-                        }
-
-                        orderProcessorRepository.PrintColored("Items in your cart:", ConsoleColor.Green);
-                        foreach (var item in cartItems)
-                        {
-                            int quantityInCart = orderProcessorRepository.GetQuantityInCart(currentCustomer, item.ProductId);
-                            Console.WriteLine($"Product ID: {item.ProductId}, Name: {item.Name}, Quantity: {quantityInCart}");
-                        }
-                        break;
-
-                    case "5":
-                        Console.WriteLine("Enter Shipping Address:");
-                        string shippingAddress = Console.ReadLine();
-
-                        var productsInCart = orderProcessorRepository.getAllFromCart(currentCustomer);
-                        if (productsInCart.Count == 0)
-                        {
-                            orderProcessorRepository.PrintColored("Your cart is empty", ConsoleColor.Red);
-                            Console.WriteLine();
-                            break;
-                        }
-
-                        var productsWithQuantity = new List<Dictionary<Product, int>>();
-                        foreach (var product in productsInCart)
-                        {
-                            int quantityInCart = orderProcessorRepository.GetQuantityInCart(currentCustomer, product.ProductId);
-                            productsWithQuantity.Add(new Dictionary<Product, int> { { product, quantityInCart } });
-                        }
-
-                        if (orderProcessorRepository.placeOrder(currentCustomer, productsWithQuantity, shippingAddress))
-                        {
-                            orderProcessorRepository.PrintColored("Order placed successfully!", ConsoleColor.Green);
-                            Console.WriteLine();
-
-                            var orderId = orderProcessorRepository.GetLatestOrderId(currentCustomer.CustomerId);
-                            decimal totalPrice = orderProcessorRepository.CalculateTotalPrice(productsWithQuantity);
-                            Console.WriteLine("Order Details:");
-
-                            foreach (var productDict in productsWithQuantity)
-                            {
-                                foreach (var product in productDict)
-                                {
-                                    int quantityToDeduct = productDict[product.Key];
-                                    Console.WriteLine($"Product Id: {product.Key.ProductId}, Quantity: {quantityToDeduct}, Total Price: {product.Key.Price * quantityToDeduct}"); // Correct total price calculation
-                                    orderProcessorRepository.DeductStock(product.Key.ProductId, quantityToDeduct);
-                                }
-                            }
-
-                            orderProcessorRepository.ClearCart(currentCustomer);
-                        }
-                        else
-                        {
-                            orderProcessorRepository.PrintColored("Failed to place the order. Please try again.", ConsoleColor.Red);
-                            Console.WriteLine();
-                        }
-                        break;
-
-                    case "6":
-                        List<Order> orders = orderProcessorRepository.GetOrdersByCustomer(currentCustomer.CustomerId);
-                        if (orders.Count == 0)
-                        {
-                            orderProcessorRepository.PrintColored("You have no orders.", ConsoleColor.Red);
-                            Console.WriteLine();
-                        }
-                        else
-                        {
-                            Console.WriteLine("Your Orders:");
-                            foreach (var order in orders)
-                            {
-                                Console.WriteLine($"\nOrder ID: {order.OrderId}, Order Date: {order.OrderDate:d}, Total Price: {order.TotalPrice}, Shipping Address: {order.ShippingAddress}\n");
-                            }
-                        }
-
-                        break;
-
-                    case "7":
-                        orderProcessorRepository.PrintColored("Exiting...", ConsoleColor.Green);
-                        Console.WriteLine();
-                        return;
-
-                    default:
-                        orderProcessorRepository.PrintColored("Invalid choice. Please try again.", ConsoleColor.Red);
-                        Console.WriteLine();
-                        break;
-                }
-            }
-        }
-
         private static bool Login()
         {
             Console.WriteLine("\nEnter Email:");
@@ -326,6 +126,266 @@ namespace Ecommerce_Application.Main
             {
                 orderProcessorRepository.PrintColored(ex.Message, ConsoleColor.Red);
                 Console.WriteLine();
+            }
+        }
+        private static void Admin_Menu()
+        {
+            while (true)
+            {
+                Console.WriteLine("\nAdmin Menu:");
+                Console.WriteLine("1. Create Product");
+                Console.WriteLine("2. Delete Product");
+                Console.WriteLine("3. View Customer's Orders");
+                Console.WriteLine("4. Exit\n");
+
+                orderProcessorRepository.PrintColored("Enter Your Choice (1-4):  ", ConsoleColor.Yellow);
+                string choice = Console.ReadLine();
+
+                admin_menu:
+                switch (choice)
+                {
+                    case "1":
+                        Console.WriteLine("\nEnter Product Name:");
+                        string productName = Console.ReadLine();
+                        Console.WriteLine("Enter Product Price:");
+                        decimal productPrice = decimal.Parse(Console.ReadLine());
+                        Console.WriteLine("Enter Product Description:");
+                        string productDescription = Console.ReadLine();
+                        Console.WriteLine("Enter Stock Quantity:");
+                        int stockQuantity = int.Parse(Console.ReadLine());
+
+                        if (orderProcessorRepository.createProduct(new Product { Name = productName, Price = productPrice, Description = productDescription, StockQuantity = stockQuantity }))
+                        {
+                            orderProcessorRepository.PrintColored("Product created successfully.", ConsoleColor.Green);
+                            Console.WriteLine();
+                        }
+                        else
+                        {
+                            orderProcessorRepository.PrintColored("Failed to create product.", ConsoleColor.Red);
+                            goto admin_menu;
+                        }
+
+                        break;
+                    case "2":
+                        orderProcessorRepository.DisplayAllProducts();
+                        Console.WriteLine("\nEnter Product ID to delete:");
+                        int productIdToDelete = int.Parse(Console.ReadLine());
+                        if (orderProcessorRepository.deleteProduct(productIdToDelete))
+                        {
+                            orderProcessorRepository.PrintColored("Product deleted successfully.", ConsoleColor.Green);
+                            Console.WriteLine();
+                        }
+                        else
+                        {
+                            orderProcessorRepository.PrintColored("Failed to delete product.", ConsoleColor.Red);
+                            Console.WriteLine();
+                            goto admin_menu;
+                        }
+                        break;
+                    case "3":
+                        orderProcessorRepository.PrintColored("You have no orders.", ConsoleColor.Yellow);
+                        int customer_id = int.Parse(Console.ReadLine());
+                        List<Order> orders = orderProcessorRepository.GetOrdersByCustomer(customer_id);
+                        if (orders.Count == 0)
+                        {
+                            orderProcessorRepository.PrintColored("You have no orders.", ConsoleColor.Red);
+                            Console.WriteLine();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Your Orders:");
+                            foreach (var order in orders)
+                            {
+                                Console.WriteLine($"\nOrder ID: {order.OrderId}, Order Date: {order.OrderDate:d}, Total Price: {order.TotalPrice}, Shipping Address: {order.ShippingAddress}\n");
+                            }
+                        }
+
+                        break;
+                }
+            }
+        }
+//---------------------------------------------------------------------------------------------------------------------------------------------------------
+        private static void Customer_Menu()
+        {
+            while (true)
+            {
+                Console.WriteLine("\nCustomer Menu:");
+                Console.WriteLine("1. Add to Cart");
+                Console.WriteLine("2. View Cart");
+                Console.WriteLine("3. Place Order");
+                Console.WriteLine("4. View your Orders");
+                Console.WriteLine("5. Exit\n");
+                orderProcessorRepository.PrintColored("Enter Your Choice (1-5):  ", ConsoleColor.Yellow);
+                string choice = Console.ReadLine();
+                Console.WriteLine();
+
+                switch (choice)
+                {
+                    case "1":
+                    addProductsToCart:
+                        orderProcessorRepository.DisplayAllProducts();
+                        Console.WriteLine("\nEnter Product ID: ");
+
+                        if (int.TryParse(Console.ReadLine(), out int productIdToAdd))
+                        {
+                            Console.WriteLine("Enter Quantity: ");
+
+                            if (int.TryParse(Console.ReadLine(), out int quantityToAdd) && quantityToAdd > 0)
+                            {
+                                var productToAdd = orderProcessorRepository.GetProductById(productIdToAdd);
+
+                                if (productToAdd != null && productToAdd.StockQuantity >= quantityToAdd)
+                                {
+                                    if (orderProcessorRepository.addToCart(currentCustomer, productToAdd, quantityToAdd))
+                                    {
+                                        orderProcessorRepository.PrintColored("Product added to cart.", ConsoleColor.Green);
+                                    }
+                                    else
+                                    {
+                                        orderProcessorRepository.PrintColored("Failed to add product to cart.", ConsoleColor.Red);
+                                    }
+                                }
+                                else
+                                {
+                                    orderProcessorRepository.PrintColored("Insufficient stock available.", ConsoleColor.Red);
+                                }
+                            }
+                            else
+                            {
+                                orderProcessorRepository.PrintColored("Invalid quantity entered.", ConsoleColor.Red);
+                            }
+                        }
+                        else
+                        {
+                            orderProcessorRepository.PrintColored("Invalid Product ID.", ConsoleColor.Red);
+                        }
+                        orderProcessorRepository.PrintColored("Do you want to add more products? (Type 'yes/no')", ConsoleColor.DarkYellow);
+                        Console.WriteLine();
+                        if (Console.ReadLine()?.Trim().ToLower() == "yes")
+                        {
+                            goto addProductsToCart;
+                        }
+
+                        break;
+                    case "2":
+                        var cartItems = orderProcessorRepository.getAllFromCart(currentCustomer);
+                        if (cartItems.Count == 0)
+                        {
+                            orderProcessorRepository.PrintColored("Your cart is empty.", ConsoleColor.Red);
+                            break;
+                        }
+
+                        orderProcessorRepository.PrintColored("Items in your cart:", ConsoleColor.Green);
+                        foreach (var item in cartItems)
+                        {
+                            int quantityInCart = orderProcessorRepository.GetQuantityInCart(currentCustomer, item.ProductId);
+                            Console.WriteLine($"Product ID: {item.ProductId}, Name: {item.Name}, Quantity: {quantityInCart}");
+                        }
+                        break;
+                    case "3":
+                        Console.WriteLine("Enter Shipping Address:");
+                        string shippingAddress = Console.ReadLine();
+
+                        var productsInCart = orderProcessorRepository.getAllFromCart(currentCustomer);
+                        if (productsInCart.Count == 0)
+                        {
+                            orderProcessorRepository.PrintColored("Your cart is empty", ConsoleColor.Red);
+                            Console.WriteLine();
+                            break;
+                        }
+
+                        var productsWithQuantity = new List<Dictionary<Product, int>>();
+                        foreach (var product in productsInCart)
+                        {
+                            int quantityInCart = orderProcessorRepository.GetQuantityInCart(currentCustomer, product.ProductId);
+                            productsWithQuantity.Add(new Dictionary<Product, int> { { product, quantityInCart } });
+                        }
+
+                        if (orderProcessorRepository.placeOrder(currentCustomer, productsWithQuantity, shippingAddress))
+                        {
+                            orderProcessorRepository.PrintColored("Order placed successfully!", ConsoleColor.Green);
+                            Console.WriteLine();
+
+                            var orderId = orderProcessorRepository.GetLatestOrderId(currentCustomer.CustomerId);
+                            decimal totalPrice = orderProcessorRepository.CalculateTotalPrice(productsWithQuantity);
+                            Console.WriteLine("Order Details:");
+
+                            foreach (var productDict in productsWithQuantity)
+                            {
+                                foreach (var product in productDict)
+                                {
+                                    int quantityToDeduct = productDict[product.Key];
+                                    Console.WriteLine($"Product Id: {product.Key.ProductId}, Quantity: {quantityToDeduct}, Total Price: {product.Key.Price * quantityToDeduct}"); // Correct total price calculation
+                                    orderProcessorRepository.DeductStock(product.Key.ProductId, quantityToDeduct);
+                                }
+                            }
+
+                            orderProcessorRepository.ClearCart(currentCustomer);
+                        }
+                        else
+                        {
+                            orderProcessorRepository.PrintColored("Failed to place the order. Please try again.", ConsoleColor.Red);
+                            Console.WriteLine();
+                        }
+                        break;
+                    case "4":
+                        List<Order> orders = orderProcessorRepository.GetOrdersByCustomer(currentCustomer.CustomerId);
+                        if (orders.Count == 0)
+                        {
+                            orderProcessorRepository.PrintColored("You have no orders.", ConsoleColor.Red);
+                            Console.WriteLine();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Your Orders:");
+                            foreach (var order in orders)
+                            {
+                                Console.WriteLine($"\nOrder ID: {order.OrderId}, Order Date: {order.OrderDate:d}, Total Price: {order.TotalPrice}, Shipping Address: {order.ShippingAddress}\n");
+                            }
+                        }
+
+                        break;
+                    case "5":
+                        Console.WriteLine("Exitting...");
+                        return;
+                    default:
+                        Console.WriteLine();
+                        break;
+                }
+                    
+            }
+        }
+
+        private static void Menu1()
+        {
+            while (true)
+            {
+                Console.WriteLine("\nSelect an option:");
+                Console.WriteLine("1. Customer");
+                Console.WriteLine("2. Admin");
+                Console.WriteLine("3. Exit");
+
+                orderProcessorRepository.PrintColored("Enter Your Choice (1-3):  ", ConsoleColor.Yellow);
+                string choice = Console.ReadLine();
+                switch (choice)
+                {
+                    case "1":
+                        Customer_Menu();
+                        break;
+                    case "2":
+                        orderProcessorRepository.PrintColored("\nEnter Admin Password: ", ConsoleColor.Yellow);
+                        string admin_pass = Console.ReadLine();
+                        if (orderProcessorRepository.IsAdmin(admin_pass))
+                        {
+                            Admin_Menu();
+                        }
+                        else
+                        {
+                            orderProcessorRepository.PrintColored("\nYou are not an admin", ConsoleColor.Red);
+                        }
+                        break;
+                      
+                }
             }
         }
     }

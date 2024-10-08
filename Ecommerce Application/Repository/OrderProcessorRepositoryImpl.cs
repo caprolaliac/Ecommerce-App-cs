@@ -788,6 +788,19 @@ namespace Ecommerce_Application.Repository
             Console.ResetColor();
         }
 
+        public bool IsAdmin(string admin_password)
+        {
+            if (admin_password=="admin@123")
+            {
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("Wrong admin Password.");
+                return false;
+            }
+        }
+
 
 
 

@@ -38,5 +38,6 @@ namespace Ecommerce_Application.Repository
         bool IsValidPassword(string password);
         void PrintColored(string message, ConsoleColor color);
 
+        bool IsAdmin(string admin_password);
     }
 }
